@@ -1,11 +1,21 @@
+from django.conf import settings
 from django.http import HttpResponse
+from django.shortcuts import render_to_response
 from django.template import RequestContext, loader
-
 # Create your views here.
+import os
 
 def show(request):
-    template = loader.get_template('benchmarks/show.html')
-    context = RequestContext(request, {
-        'test': [1,2,3,4,5,6,7,8],
-    })
-    return HttpResponse(template.render(context))
+    path = os.path.join(settings.BASE_DIR, 'plots', 'plots')
+    dirs = []
+    files = []
+    for item in os.listdir(path):
+        if os.path.isdir(os.path.join(path, item)):
+            dirs.append(item)
+        else:
+            files.append(item)
+
+    return render_to_response('benchmarks/show.html', {
+            'dirs' : dirs,
+            'files': files
+        }, context_instance=RequestContext(request))

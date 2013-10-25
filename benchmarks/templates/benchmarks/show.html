@@ -4,6 +4,12 @@
   <!-- Main component for a primary marketing message or call to action -->
     <div class="jumbotron">
         <div class="bs-example">
+            {% for dir in dirs %}
+                <p>{{dir}}</p>
+            {% endfor %}
+            {% for file in files %}
+                <p>{{file}}</p>
+            {% endfor %}
             <div class="row">
                 <div class="col-sm-6 col-md-3">
                     <a href="#" class="thumbnail">

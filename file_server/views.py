@@ -6,7 +6,7 @@ from django.template import RequestContext, loader
 import os
 
 def show(request):
-    path = os.path.join(settings.BASE_DIR, 'plots', 'plots')
+    path = os.path.join(settings.FILE_DIR, 'files')
     dirs = []
     files = []
     for item in os.listdir(path):
@@ -15,7 +15,7 @@ def show(request):
         else:
             files.append(item)
 
-    return render_to_response('benchmarks/show.html', {
+    return render_to_response('file_server/show.html', {
             'dirs' : dirs,
             'files': files
         }, context_instance=RequestContext(request))

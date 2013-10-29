@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load format %}
+{% block content %}
+<div class="container">
+    <ol class="breadcrumb small">
+    {% if current_dir %}
+        <li><a href="/files">.</a></li>
+    {% else %}
+        <!-- We are in the root directory. -->
+        <li class="active">.</li>
+    {% endif %}
+    {% for sub_dir in current_dir %}
+    {% if not forloop.last %}
+        {% with slicer=forloop.counter|format:"0:%s" %}
+        <li><a href="/files/{{ current_dir|slice:slicer|join:"/" }}">{{sub_dir}}</a></li>
+        {% endwith %}
+    {% else %}
+        <li class="active">{{sub_dir}}</li>
+    {% endif %}
+    {% endfor %}
+    </ol>
+    {% if dirs %}
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">Directories</h3>
+        </div>
+        <div class="panel-body">
+            {% for dir in dirs %}
+                <a type="button" class="col-md-3 btn btn-default" href="/files/{{ current_dir|join:"/" }}/{{dir}}">{{dir}}</a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+        {% for file in files %}
+            {% cycle '<div class = row>' '' '' %}
+            <div class="col-sm-4 col-md-4">
+                <div class="thumbnail">
+                    <a href="/static/{{ current_dir|join:"/" }}/{{file}}" class="thumbnail">
+                        <img src="/static/{{ current_dir|join:"/" }}/{{file}}" alt="{{file}}">
+                    </a>
+                    <div class="caption">
+                    <p>{{file}}</p>
+                </div>
+                </div>
+            </div>
+            {% cycle '' '' '</div>' %}
+        {% endfor %}
+</div>
+{% endblock %}
+

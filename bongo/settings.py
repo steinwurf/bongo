@@ -7,14 +7,19 @@ https://docs.djangoproject.com/en/dev/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
+import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-# Set this to what ever you like, and bongo will serve the files within that
-# directory.
+# Set this to the parent folder for the folder named files, containing the files
+# to serve.
 FILE_DIR = BASE_DIR
+
+
+IMAGE_TYPES = ['png', 'jpg', 'gif']
+
+IMAGE_TYPES = [image.lower() for image in IMAGE_TYPES]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/

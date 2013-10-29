@@ -9,26 +9,24 @@
     <style type="text/css">
       body {
         padding-top: 70px;
+        fixed_width {
+          height: 40px;
+          width: 50px;
+        }
       }
     </style>
     <link rel="shortcut icon" href="{% static "ico/favicon.png" %}">
-
     <title>Bongo</title>
-
     <!-- Bootstrap core CSS -->
     <link href="{% static "css/bootstrap.css" %}" rel="stylesheet">
-
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
       <script src="{% static "js/html5shiv.js" %}"></script>
       <script src="{% static "js/respond.min.js" %}"></script>
     <![endif]-->
   </head>
-
   {% load active_page %}
-
   <body>
-
     <!-- Fixed navbar -->
     <div class="navbar navbar-default navbar-fixed-top">
       <div class="container">
@@ -43,7 +41,7 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li class="{% active request "^/$" %}"><a href="/">Home</a></li>
-            <li class="{% active request "^/files$" %}"><a href="/files">Files</a></li>
+            <li class="{% active request "^/files" %}"><a href="/files">Files</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li class="{% active request "^/about$" %}"><a href="/about">About</a></li>
@@ -52,14 +50,12 @@
       </div>
     </div>
     {% block content %} {% endblock %}
-
+    <br>
     <div id="footer">
       <div class="container">
-        <p class="text-muted credit">Copyright &copy; 2013, <a href="http://www.steinwurf.com">Steinwurf ApS</a>
-All rights reserved.</p>
+        <p class="text-muted credit">Copyright &copy; 2013, <a href="http://www.steinwurf.com">Steinwurf ApS</a> All rights reserved.</p>
       </div>
     </div>
-
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->

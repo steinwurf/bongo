@@ -6,34 +6,30 @@ File Server
 
 Installation
 ============
-First off we need pyhton and pip.
+First off, we need to install pyhton, pip, and fabric on the server which is to host bongo.::
 
-  $ apt-get install python python-pip
+  $ apt-get install python python-pip fabric
 
-Now we need some tools which allows us to create an isolated python environment so that the requirements of bongo can be installed in isolation.
+Now we need a tool called virtualenvwrapper. This allows us to create an isolated python environment so that the requirements of bongo can be contained.::
 
-  $ pip install virtualenv
   $ pip install virtualenvwrapper
 
-Note, we could just use virtualenv, but virtualenvwrapper makes this easier to work with.
+Note, virtualenvwrapper is, as the name may imply, just a wrapper for virtualenv that makes it easier to work with.
 
-Now you need to configure virtualenvwrapper add the follwoing to your shell startup file (e.g., .bash_profile).
+Now you need to configure virtualenvwrapper. Add the follwoing to your shell startup file (e.g., ``.bashrc``)::
 
   export WORKON_HOME=$HOME/.virtualenvs
   source /usr/local/bin/virtualenvwrapper.sh
 
-You may need to reload the startup script before you can continue with this guide. Now create the bongo environment and install the requirements.
+You need to reload the startup script (reboot or do a ``source [startup file]``, e.g., ``.bashrc``) before you can continue with this guide.
 
-  mkvirtualenv bongo
-  pip install -Ur requirements.txt
+Now you are ready to utilize the fabric script to easily get bongo up and running. The fabric script can be used in three scenarios,
 
-When you create the environment you will automatically activate it. To later deactivate run the following command:
+#. Run bongo locally in a debug environment (fab localhost debug [command]).
+#. Run bongo locally in a environment (fab localhost [command]).
+#. Run bongo remotely in a environment (fab remote [command]).
 
-  deactivate
+Now use fabric to create the bongo environment and install the requirements::
 
-When you want to reactivate run the following
-
-  workon bongo
-
-To see the full list of commands supported by virtualenvwrapper, go here: http://virtualenvwrapper.readthedocs.org/en/latest/command_ref.html
+  fab localhost install_requirements
 

@@ -13,7 +13,7 @@ from distutils.util import strtobool
 import os
 
 env.hosts = ["192.168.6.82"]
-env.user = "demo1"
+env.user = "bongo"
 
 def setup_installer():
     if 'installer' not in env:
@@ -25,7 +25,8 @@ def install(package):
     env.sudo('{0} install {1}'.format(env.installer, package))
 
 @task
-def remote(git_top_level):
+def remote(git_top_level, bongoPort):
+    env.bongoPort     = bongoPort
     env.local         = False
     env.debug         = False
     env.git_top_level = git_top_level
@@ -36,7 +37,8 @@ def remote(git_top_level):
     env.sudo          = rsudo
 
 @task
-def local(debug = 'True', git_top_level = None):
+def local(debug = 'True', git_top_level = None, bongoPort = 8080):
+    env.bongoPort     = bongoPort
     env.debug = bool(strtobool(debug))
     env.local = True
     if env.debug:
@@ -55,9 +57,9 @@ def local(debug = 'True', git_top_level = None):
 
 @task
 def setup():
-    clone()
-    init()
-    install_requirements()
+    #clone()
+    #init()
+    #install_requirements()
     setup_apache()
 
 @task
@@ -65,9 +67,8 @@ def clone():
     if env.debug:
         print "No need to clone, you already have done that."
         return
-    if env.exists(env.git_top_level):
-        print("'{}' already exists.".format(env.git_top_level))
-        return
+
+    env.run('mkdir -p {}'.format(env.git_top_level))
     install('git')
     env.run('git clone https://github.com/steinwurf/bongo.git {0}'.format(
         env.git_top_level))
@@ -92,8 +93,8 @@ def install_requirements():
 
     with env.cd(env.git_top_level):
         with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
-            env.run('mkvirtualenv bongo_test')
-            with prefix('workon bongo_test'):
+            env.run('mkvirtualenv bongo')
+            with prefix('workon bongo'):
                 env.run('pip install -Ur requirements.txt')
 
 @task
@@ -101,66 +102,64 @@ def setup_apache():
     if env.debug:
         print('No need to install apache as this is only for debugging.')
         return
-    install('apache2')
-    install('libapache2-mod-wsgi')
+    #install('apache2')
+    #install('libapache2-mod-wsgi')
 
     override = True
-    apacheFile = '/etc/apache2/site-available/bongo'
+    apacheFile = '/etc/apache2/sites-available/bongo'
     if env.exists(apacheFile):
         override = confirm('Do you want to override the file'
             '"{}"?'.format(apacheFile))
 
     if override:
-        env.sudo('echo {0} >> {1}'.format(
-            '<VirtualHost *:80>'
-            '    ServerName bongo'
-            '    WSGIDaemonProcess bongo-production user=bongo group=bongo threads=10 python-path=/home/bongo/.virtualenvs/bongo/lib/python2.7/site-packages'
-            '    WSGIProcessGroup bongo-production'
-            '    WSGIScriptAlias / {0}/deploy/bongo.wsgi'
-            '    <Directory {0}/deploy>'
-            '        Order deny,allow'
-            '        Allow from all'
-            '    </Directory>'
-            '    ErrorLog /var/log/apache2/error.log'
-            '    LogLevel warn'
-            '    CustomLog /var/log/apache2/access.log combined'
-            '</VirtualHost>'.format(env.git_top_level),
+        env.sudo('printf "{0}" >> {1}'.format(
+            ('<VirtualHost *:{bongoPort}>\n'
+            '    ServerName bongo\n'
+            '    WSGIDaemonProcess bongo-production user={user} group=bongo threads=10 python-path=/home/{user}/.virtualenvs/bongo/lib/python2.7/site-packages\n'
+            '    WSGIProcessGroup bongo-production\n'
+            '    WSGIScriptAlias / {git_top_level}/bongo/bongo.wsgi\n'
+            '    <Directory {git_top_level}/bongo>\n'
+            '        Order deny,allow\n'
+            '        Allow from all\n'
+            '    </Directory>\n'
+            '    ErrorLog /var/log/apache2/error.log\n'
+            '    LogLevel warn\n'
+            '    CustomLog /var/log/apache2/access.log combined\n'
+            '</VirtualHost>').format(**{
+                    'bongoPort'      : env.bongoPort,
+                    'user'          : env.user,
+                    'git_top_level' : env.git_top_level
+                }),
             apacheFile
             ))
         with env.cd('/etc/apache2/sites-enabled'):
-            env.run('ln -s ../sites-available/bongo')
+            env.sudo('ln -s ../sites-available/bongo')
 
-    env.run('/etc/init.d/apache2 restart')
-
-    # apache2 setup
-    if not env.is_production:
-        print "No need for git clone, as this is only when running production."
+    restart()
 
 
 @task
 def start():
-    pass
+    if not env.debug:
+        env.run('/etc/init.d/apache2 start')
+    else:
+        print('Run "./manage runserver 8080" in the console')
 @task
 def stop():
-    pass
+    if not env.debug:
+        env.run('/etc/init.d/apache2 stop')
 
 @task
 def restart():
-    pass
-
+    if not env.debug:
+        env.run('/etc/init.d/apache2 restart')
+    else:
+        stop()
+        start()
 @task
 def update(git_top_level = None):
-    if not git_top_level:
-        git_top_level = os.path.dirname(os.path.realpath(__file__))
-
-    print "update"
-
-@task
-def production_install(project_location = ''):
-    clone_bongo(project_location)
-    init_bongo(project_location)
-    install_bongo('')
-    #install_requirements('')
+    with env.cd(env.git_top_level):
+        env.run('git pull')
 
 @task
 def clone_bongo(project_location = ''):
@@ -171,23 +170,3 @@ def clone_bongo(project_location = ''):
         return
     env.run('git clone https://github.com/steinwurf/bongo.git {0}'.format(
         project_location))
-
-
-
-# @task
-# def install_requirements(project_location = ''):
-#     if project_location == '':
-#         project_location = project_name
-#     if confirm('Install and setup virtualenvwrapper?', True):
-#         env.sudo('apt-get install python-pip')
-#         env.sudo('pip install virtualenvwrapper')
-#     with env.cd(project_location):
-
-@task
-def deploy(project_location = ''):
-    if project_location == '':
-        project_location = project_name
-
-    with env.cd(project_location):
-        env.run('git pull')
-        env.run('workon {}'.format(project_name))

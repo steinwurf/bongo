@@ -124,7 +124,7 @@ def setup_apache():
                     'threads=10 python-path=/home/{user}/.virtualenvs/bongo'
                     '/lib/python2.7/site-packages\n'
             '    WSGIProcessGroup bongo-production\n'
-            '    WSGIScriptAlias / {git_top_level}/bongo/bongo.wsgi\n'
+            '    WSGIScriptAlias / {git_top_level}/bongo/wsgi.py\n'
             '    Alias /static/ /var/www/bongo/static/\n'
             '    <Directory {git_top_level}/bongo>\n'
             '        Order deny,allow\n'

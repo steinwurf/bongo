@@ -6,8 +6,11 @@ from django.template import RequestContext, loader
 import os
 
 def show(request, current_dir = '/'):
-    path = os.path.join(
-        settings.BASE_DIR if settings.DEBUG else settings.STATIC_ROOT, 'files', 'files')
+    path = None
+    if settings.DEBUG:
+        path = os.path.join(settings.BASE_DIR, 'files', 'files')
+    else:
+        path = os.path.join(settings.STATIC_ROOT, 'files')
 
     # Get the requested directory. split the current dir with / and filter out
     # any None values.

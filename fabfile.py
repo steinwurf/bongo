@@ -153,7 +153,7 @@ def deploy_static_files():
     with env.cd(env.git_top_level):
         with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
             with prefix('workon bongo'):
-                env.sudo('./manage.py collectstatic -v0 --no-input')
+                env.sudo('./manage.py collectstatic -v0 --noinput')
 
 
 @task

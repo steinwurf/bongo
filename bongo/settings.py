@@ -103,8 +103,6 @@ STATIC_ROOT = '/var/www/bongo/static/'
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
-    # Bongo related static files
-    os.path.join(BASE_DIR, "static"),
     # Twitter Bootstrap stuff
     os.path.join(BASE_DIR, "bootstrap/dist"),
     os.path.join(BASE_DIR, "bootstrap/assets"),

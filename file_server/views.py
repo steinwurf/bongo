@@ -30,6 +30,10 @@ def show(request, current_dir = '/'):
         else:
             files.append(item)
 
+    # Hack to add trailing slash in template if needed
+    if current_dir:
+        current_dir.append('')
+
     return render_to_response('file_server/show.html', {
             'dirs'      : dirs,
             'files'     : files,

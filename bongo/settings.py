@@ -12,19 +12,7 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-IMAGE_TYPES = ['png', 'jpg', 'gif']
-
-IMAGE_TYPES = [image.lower() for image in IMAGE_TYPES]
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '+jeqyau%4!8jlqcmgls)y9uo*xjd*sk56*tf(htak*xk-r45^y'
-
 TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
-
-ALLOWED_HOSTS = []
 
 # Application definition
 

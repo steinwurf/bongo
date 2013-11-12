@@ -12,3 +12,5 @@ from settings import *
 DEBUG = True
 
 TEMPLATE_DEBUG = True
+
+SECRET_KEY = 'SSSHVERYSECRET!'

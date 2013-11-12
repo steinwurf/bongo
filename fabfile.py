@@ -26,8 +26,7 @@ def install(package):
     env.sudo('{0} install {1}'.format(env.installer, package))
 
 @task
-def remote(git_top_level, bongoPort):
-    env.bongoPort     = bongoPort
+def remote(git_top_level):
     env.local         = False
     env.debug         = False
     env.git_top_level = git_top_level
@@ -38,8 +37,7 @@ def remote(git_top_level, bongoPort):
     env.sudo          = rsudo
 
 @task
-def local(debug = 'True', git_top_level = None, bongoPort = 8080):
-    env.bongoPort     = bongoPort
+def local(debug = 'True', git_top_level = None):
     env.debug = bool(strtobool(debug))
     env.local = True
     if env.debug:
@@ -61,12 +59,16 @@ def setup():
     require('local', provided_by=[local, remote])
     clone()
     init()
-    install_requirements()
+    if confirm('Do you want this script to setup the bongo requirements? '
+               'python, pip, django, and virtualenvwrapper will be '
+               'installed and configured.'):
+        install_requirements()
     setup_apache()
     deploy_static_files()
 
 @task
 def clone():
+    require('local', provided_by=[local, remote])
     if env.debug:
         print "No need to clone, you already have done that."
         return
@@ -78,14 +80,17 @@ def clone():
 
 @task
 def init():
+    require('local', provided_by=[local, remote])
     with env.cd(env.git_top_level):
         env.run('git submodule init')
         env.run('git submodule update')
 
 @task
 def install_requirements():
+    require('local', provided_by=[local, remote])
     install('python')
     install('python-pip')
+
     env.sudo('pip install virtualenvwrapper')
 
     env.run('printf "{}" >> ~/.bashrc'.format(
@@ -102,73 +107,71 @@ def install_requirements():
 
 @task
 def setup_apache():
+    require('local', provided_by=[local, remote])
     if env.debug:
-        print('No need to install apache as this is only for debugging.')
+        print('No need to install apache as this is only for production.')
         return
     install('apache2')
     install('libapache2-mod-wsgi')
     env.sudo('a2dissite default')
-    override = True
-    apacheFile = '/etc/apache2/sites-available/bongo'
-    if env.exists(apacheFile):
-        override = confirm('Do you want to override the file'
-            '"{}"?'.format(apacheFile))
-        if override:
-            env.sudo('rm {}'.format(apacheFile))
 
-    if override:
-        env.sudo('printf "{0}" >> {1}'.format(
-            ('<VirtualHost *:80>\n'
-            '    ServerName 127.0.1.1\n'
-            '    WSGIDaemonProcess bongo-production user={user} group=bongo '
-                    'threads=10 python-path=/home/{user}/.virtualenvs/bongo'
-                    '/lib/python2.7/site-packages\n'
-            '    WSGIProcessGroup bongo-production\n'
-            '    WSGIScriptAlias / {git_top_level}/bongo/wsgi.py\n'
-            '    Alias /static/ /var/www/bongo/static/\n'
-            '    <Directory {git_top_level}/bongo>\n'
-            '        Order deny,allow\n'
-            '        Allow from all\n'
-            '    </Directory>\n'
-            '    ErrorLog /var/log/apache2/error.log\n'
-            '    LogLevel warn\n'
-            '    CustomLog /var/log/apache2/access.log combined\n'
-            '</VirtualHost>').format(**{
-                    'bongoPort'      : env.bongoPort,
-                    'user'          : env.user,
-                    'git_top_level' : env.git_top_level
-                }),
-            apacheFile
-            ))
-        with env.cd('/etc/apache2/sites-enabled'):
-            if env.exists('bongo'):
-                env.sudo('rm bongo')
-            env.sudo('ln -s ../sites-available/bongo')
+    apache_file = '/etc/apache2/sites-available/bongo'
+    if env.exists(apache_file):
+        env.sudo('rm {}'.format(apache_file))
+
+
+    env.sudo('printf "{0}" >> {1}'.format(
+       ('<VirtualHost *:80>\n'
+        '    ServerName 127.0.1.1\n'
+        '    WSGIDaemonProcess bongo-production user={user} group=bongo '
+                'threads=10 python-path=/home/{user}/.virtualenvs/bongo'
+                '/lib/python2.7/site-packages\n'
+        '    WSGIProcessGroup bongo-production\n'
+        '    WSGIScriptAlias / {git_top_level}/bongo/wsgi.py\n'
+        '    Alias /static/ /var/www/bongo/static/\n'
+        '    <Directory {git_top_level}/bongo>\n'
+        '        Order deny,allow\n'
+        '        Allow from all\n'
+        '    </Directory>\n'
+        '    ErrorLog /var/log/apache2/error.log\n'
+        '    LogLevel warn\n'
+        '    CustomLog /var/log/apache2/access.log combined\n'
+        '</VirtualHost>\n').format(**env), apache_file))
+    with env.cd('/etc/apache2/sites-enabled'):
+        if env.exists('bongo'):
+            env.sudo('rm bongo')
+        env.sudo('ln -s ../sites-available/bongo')
 
     restart()
 
 @task
 def deploy_static_files():
+    require('local', provided_by=[local, remote])
+    if env.debug:
+        print('No need to deploy static files as this is only for production.')
+        return
     env.sudo('mkdir -p /var/www/bongo/static/')
     with env.cd(env.git_top_level):
         with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
             with prefix('workon bongo'):
                 env.sudo('./manage.py collectstatic -v0 --noinput')
 
-
 @task
 def start():
+    require('local', provided_by=[local, remote])
     if not env.debug:
         env.run('/etc/init.d/apache2 start')
     else:
         print('Run "./manage runserver 8080" in the console')
 @task
 def stop():
+    require('local', provided_by=[local, remote])
     if not env.debug:
         env.run('/etc/init.d/apache2 stop')
 
 @task
 def restart():
+    require('local', provided_by=[local, remote])
     if not env.debug:
         env.sudo('/etc/init.d/apache2 restart')
     else:
@@ -176,15 +179,6 @@ def restart():
         start()
 @task
 def update(git_top_level = None):
+    require('local', provided_by=[local, remote])
     with env.cd(env.git_top_level):
         env.run('git pull')
-
-@task
-def clone_bongo(project_location = ''):
-    if project_location == '':
-        project_location = project_name
-    if env.exists(project_location):
-        print("'{}' already exists.".format(project_location))
-        return
-    env.run('git clone https://github.com/steinwurf/bongo.git {0}'.format(
-        project_location))

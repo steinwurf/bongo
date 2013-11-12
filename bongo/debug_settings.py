@@ -1,5 +1,5 @@
 """
-Django production settings for bongo project.
+Django debug settings for bongo project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/dev/topics/settings/
@@ -9,9 +9,6 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 """
 from settings import *
 
-DEBUG = False
+DEBUG = True
 
-TEMPLATE_DEBUG = False
-
-# WARNING! FIX ThIS!
-ALLOWED_HOSTS = ['*']
+TEMPLATE_DEBUG = True

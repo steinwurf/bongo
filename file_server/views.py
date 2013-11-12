@@ -7,7 +7,8 @@ import os
 
 def show(request, current_dir = '/'):
     print current_dir
-    path = os.path.join(settings.FILE_DIR, 'files')
+    path = os.path.join(
+        settings.BASE_DIR if settings.DEBUG else settings.STATIC_ROOT, 'files')
 
     current_dir = filter(None, current_dir.split('/'))
     if current_dir:

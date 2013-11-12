@@ -117,13 +117,14 @@ def setup_apache():
 
     if override:
         env.sudo('printf "{0}" >> {1}'.format(
-            ('<VirtualHost *:{bongoPort}>\n'
-            '    ServerName bongo\n'
+            ('<VirtualHost *:80>\n'
+            '    ServerName 127.0.1.1\n'
             '    WSGIDaemonProcess bongo-production user={user} group=bongo '
                     'threads=10 python-path=/home/{user}/.virtualenvs/bongo'
                     '/lib/python2.7/site-packages\n'
             '    WSGIProcessGroup bongo-production\n'
             '    WSGIScriptAlias / {git_top_level}/bongo/bongo.wsgi\n'
+            '    Alias /static/ /var/wwww/bongo/static/ '
             '    <Directory {git_top_level}/bongo>\n'
             '        Order deny,allow\n'
             '        Allow from all\n'
@@ -144,6 +145,12 @@ def setup_apache():
             env.sudo('ln -s ../sites-available/bongo')
 
     restart()
+
+@task
+def deploy_static():
+    with cd(env.git_top_level):
+
+        env.run('./manage.py collectstatic -v0 --noinput')
 
 
 @task

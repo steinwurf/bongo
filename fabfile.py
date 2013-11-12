@@ -7,6 +7,7 @@ from fabric.context_managers import lcd, prefix
 from fabric.contrib.console import confirm, prompt
 from fabric.contrib.files import exists as rexists
 from fabric.operations import local as lrun
+from fabric.operations import require
 from fabric.state import env
 from os.path import exists as lexists
 from distutils.util import strtobool
@@ -57,9 +58,10 @@ def local(debug = 'True', git_top_level = None, bongoPort = 8080):
 
 @task
 def setup():
-    #clone()
-    #init()
-    #install_requirements()
+    require('local', provided_by=[local, remote])
+    clone()
+    init()
+    install_requirements()
     setup_apache()
 
 @task
@@ -102,20 +104,24 @@ def setup_apache():
     if env.debug:
         print('No need to install apache as this is only for debugging.')
         return
-    #install('apache2')
-    #install('libapache2-mod-wsgi')
-
+    install('apache2')
+    install('libapache2-mod-wsgi')
+    env.sudo('a2dissite default')
     override = True
     apacheFile = '/etc/apache2/sites-available/bongo'
     if env.exists(apacheFile):
         override = confirm('Do you want to override the file'
             '"{}"?'.format(apacheFile))
+        if override:
+            env.sudo('rm {}'.format(apacheFile))
 
     if override:
         env.sudo('printf "{0}" >> {1}'.format(
             ('<VirtualHost *:{bongoPort}>\n'
             '    ServerName bongo\n'
-            '    WSGIDaemonProcess bongo-production user={user} group=bongo threads=10 python-path=/home/{user}/.virtualenvs/bongo/lib/python2.7/site-packages\n'
+            '    WSGIDaemonProcess bongo-production user={user} group=bongo '
+                    'threads=10 python-path=/home/{user}/.virtualenvs/bongo'
+                    '/lib/python2.7/site-packages\n'
             '    WSGIProcessGroup bongo-production\n'
             '    WSGIScriptAlias / {git_top_level}/bongo/bongo.wsgi\n'
             '    <Directory {git_top_level}/bongo>\n'
@@ -133,6 +139,8 @@ def setup_apache():
             apacheFile
             ))
         with env.cd('/etc/apache2/sites-enabled'):
+            if env.exists('bongo'):
+                env.sudo('rm bongo')
             env.sudo('ln -s ../sites-available/bongo')
 
     restart()
@@ -152,7 +160,7 @@ def stop():
 @task
 def restart():
     if not env.debug:
-        env.run('/etc/init.d/apache2 restart')
+        env.sudo('/etc/init.d/apache2 restart')
     else:
         stop()
         start()

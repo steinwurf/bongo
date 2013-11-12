@@ -63,6 +63,7 @@ def setup():
     init()
     install_requirements()
     setup_apache()
+    deploy_static_files()
 
 @task
 def clone():
@@ -124,7 +125,7 @@ def setup_apache():
                     '/lib/python2.7/site-packages\n'
             '    WSGIProcessGroup bongo-production\n'
             '    WSGIScriptAlias / {git_top_level}/bongo/bongo.wsgi\n'
-            '    Alias /static/ /var/wwww/bongo/static/ '
+            '    Alias /static/ /var/wwww/bongo/static/\n'
             '    <Directory {git_top_level}/bongo>\n'
             '        Order deny,allow\n'
             '        Allow from all\n'
@@ -147,10 +148,12 @@ def setup_apache():
     restart()
 
 @task
-def deploy_static():
-    with cd(env.git_top_level):
-
-        env.run('./manage.py collectstatic -v0 --noinput')
+def deploy_static_files():
+    env.sudo('mkdir -p /var/wwww/bongo/static/')
+    with env.cd(env.git_top_level):
+        with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
+            with prefix('workon bongo'):
+                env.sudo('./manage.py collectstatic')
 
 
 @task

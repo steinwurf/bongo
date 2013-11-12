@@ -30,7 +30,6 @@ def show(request, current_dir = '/'):
         else:
             files.append(item)
 
-    print files
     return render_to_response('file_server/show.html', {
             'dirs'      : dirs,
             'files'     : files,

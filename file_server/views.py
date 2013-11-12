@@ -6,10 +6,11 @@ from django.template import RequestContext, loader
 import os
 
 def show(request, current_dir = '/'):
-    print current_dir
     path = os.path.join(
-        settings.BASE_DIR if settings.DEBUG else settings.STATIC_ROOT, 'files')
+        settings.BASE_DIR if settings.DEBUG else settings.STATIC_ROOT, 'files', 'files')
 
+    # Get the requested directory. split the current dir with / and filter out
+    # any None values.
     current_dir = filter(None, current_dir.split('/'))
     if current_dir:
         path = os.path.join(path, *current_dir)
@@ -26,6 +27,7 @@ def show(request, current_dir = '/'):
         else:
             files.append(item)
 
+    print files
     return render_to_response('file_server/show.html', {
             'dirs'      : dirs,
             'files'     : files,

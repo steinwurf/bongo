@@ -121,7 +121,7 @@ def setup_apache():
 
     secret_key = prompt(
         'Please provide the django secret key', default='testing')
-    with env.cd(os.path.join(git_top_level, 'bongo'):
+    with env.cd(os.path.join(env.git_top_level, 'bongo')):
         env.run('rm -f SECRET')
         env.run('echo {} >> SECRET'.format(secret_key))
 

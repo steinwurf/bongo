@@ -97,8 +97,6 @@ def install_requirements():
             'export WORKON_HOME=$HOME/.virtualenvs\n'
             'source /usr/local/bin/virtualenvwrapper.sh\n'))
 
-    env.run('export WORKON_HOME=$HOME/.virtualenvs')
-
     with env.cd(env.git_top_level):
         with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
             env.run('mkvirtualenv bongo')

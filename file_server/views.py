@@ -2,8 +2,8 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext, loader
-# Create your views here.
 import os
+from helpers import sort_humanly
 
 def show(request, current_dir = '/'):
     path = None
@@ -33,6 +33,9 @@ def show(request, current_dir = '/'):
     # Hack to add trailing slash in template if needed
     if current_dir:
         current_dir.append('')
+
+    sort_humanly(dirs)
+    sort_humanly(files)
 
     return render_to_response('file_server/show.html', {
             'dirs'      : dirs,

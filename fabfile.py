@@ -18,7 +18,7 @@ env.user = "bongo"
 
 def setup_installer():
     if 'installer' not in env:
-        env.installer = prompt('What is your package handling utility.',
+        env.installer = prompt('What is the remote package handling utility',
                                default = 'aptitude')
 
 def install(package):
@@ -119,6 +119,11 @@ def setup_apache():
     if env.exists(apache_file):
         env.sudo('rm {}'.format(apache_file))
 
+    secret_key = prompt(
+        'Please provide the django secret key', default='testing')
+    with env.cd(os.path.join(git_top_level, 'bongo'):
+        env.run('rm -f SECRET')
+        env.run('echo {} >> SECRET'.format(secret_key))
 
     env.sudo('printf "{0}" >> {1}'.format(
        ('<VirtualHost *:80>\n'

@@ -13,10 +13,15 @@ DEBUG = False
 
 TEMPLATE_DEBUG = False
 
-# WARNING! FIX ThIS!
+# WARNING! FIX THIS!
 ALLOWED_HOSTS = ['*']
 
-SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = None
+try:
+   with open('SECRET', 'r') as secret_key_file:
+    SECRET_KEY = secret_key_file.read()
+except IOError:
+    SECRET_KEY = 'testing'
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True

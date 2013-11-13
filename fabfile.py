@@ -49,7 +49,7 @@ def local(debug = 'True', git_top_level = None):
                   'debug mode.', True))
         exit(1)
 
-    env.run    = lambda cmd : lrun(cmd, shell='/bin/bash')
+    env.run    = lambda cmd : lrun(cmd, shell='/bin/bash', capture=True)
     env.cd     = lcd
     env.exists = lexists
     env.sudo   = lambda cmd : env.run('sudo {}'.format(cmd))
@@ -65,6 +65,15 @@ def setup():
         install_requirements()
     setup_apache()
     deploy_static_files()
+
+@task
+def create_bongo_user():
+    require('local', provided_by=[local, remote])
+    output = env.run('ls /home')
+    if 'bongo' in output:
+        print("bongo user already exists, not creating one.")
+    else:
+        env.sudo('adduser bongo')
 
 @task
 def clone():

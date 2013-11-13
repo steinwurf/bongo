@@ -20,7 +20,13 @@ def show(request, current_dir = '/'):
 
     dirs = []
     files = []
-    for item in os.listdir(path):
+    items = []
+    try:
+        items = os.listdir(path)
+    except Exception, e:
+        print(e)
+
+    for item in items:
         # Don't show hidden files
         if item.startswith('.'):
             continue

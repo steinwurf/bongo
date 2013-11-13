@@ -112,6 +112,7 @@ def setup_apache():
     install('apache2')
     install('libapache2-mod-wsgi')
     env.sudo('a2dissite default')
+    env.sudo('a2enmod wsgi')
 
     apache_file = '/etc/apache2/sites-available/bongo'
     if env.exists(apache_file):

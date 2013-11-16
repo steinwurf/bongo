@@ -13,10 +13,7 @@ import os
 GIT_TOP_LEVEL = '/home/bongo/webapps/bongo'
 
 def install(package):
-    if 'installer' not in env:
-        prompt('What is the remote package handling utility', key = 'installer',
-                               default = 'aptitude')
-    sudo('{0} install {1}'.format(env.installer, package))
+    sudo('apt-get install {0}'.format(package))
 
 @task
 def setup():
@@ -75,12 +72,10 @@ def install_requirements():
 def setup_apache():
     install('apache2')
     install('libapache2-mod-wsgi')
-    #Disable the default page
-    sudo('a2dissite default')
     #Enable wsgi mod
     sudo('a2enmod wsgi')
 
-    apache_file = '/etc/apache2/sites-available/bongo'
+    apache_file = '/etc/apache2/sites-available/bongo.conf'
     if exists(apache_file):
         sudo('rm {}'.format(apache_file))
 
@@ -89,6 +84,22 @@ def setup_apache():
     with cd(os.path.join(GIT_TOP_LEVEL, 'bongo')):
         sudo('rm -f SECRET', 'bongo')
         sudo('echo {} >> SECRET'.format(secret_key), 'bongo')
+
+    # Depending on the version, you need different
+    authorization = { '2.2' : ('        Order deny,allow\n'
+                               '        Allow from all\n'),
+                      '2.4' : ('        Require all granted\n')}
+
+    sudo("apache2 -v | grep 'Server version'")
+    version = prompt('which version of apache are you using {}?'.format(
+        str(authorization.keys()).replace("'", "")))
+    if version not in authorization.keys():
+        print('This script does not support apache version {}.'.format(version))
+        exit(1)
+
+    if version in ['2.2']:
+        #Disable the default page
+        sudo('a2dissite default')
 
     sudo('printf "{0}" >> {1}'.format(
        ('<VirtualHost *:80>\n'
@@ -100,16 +111,16 @@ def setup_apache():
         '    WSGIScriptAlias / {0}/bongo/wsgi.py\n'
         '    Alias /static/ /var/www/bongo/static/\n'
         '    <Directory {0}/bongo>\n'
-        '        Order deny,allow\n'
-        '        Allow from all\n'
+        '{1}'
         '    </Directory>\n'
         '    ErrorLog /var/log/apache2/error.log\n'
         '    LogLevel warn\n'
         '    CustomLog /var/log/apache2/access.log combined\n'
-        '</VirtualHost>\n').format(GIT_TOP_LEVEL), apache_file))
+        '</VirtualHost>\n').format(GIT_TOP_LEVEL, authorization[version]),
+        apache_file))
     with cd('/etc/apache2/sites-enabled'):
-        sudo('rm -f bongo')
-        sudo('ln -s ../sites-available/bongo')
+        sudo('rm -f bongo.conf')
+        sudo('ln -s ../sites-available/bongo.conf')
 
     restart()
 
@@ -141,4 +152,4 @@ def update():
 
 @task
 def error_log():
-    run('cat /var/log/apache2/error.log')
+    sudo('cat /var/log/apache2/error.log')

@@ -62,7 +62,7 @@ To use bongo in production, simply use the included fabric script like so:
 fab setup
 ```
 
-This will trigger the following fabric tasks. Note that fabric will ask you for the host, username and password, alternatively, you can specify these using ````:
+This will trigger the following fabric tasks. Note that fabric will ask you for the host, username and password, alternatively, you can specify these using ``-H [host]``, ``-u [username]``, ``-p [password]``:
 
 0. **create_user**: Create a new user called bongo
 * **clone**: Clone the bongo repository  on the specified production server to the folder ``/home/bongo/webapps/bongo``

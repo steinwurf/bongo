@@ -1,35 +1,94 @@
-bongo
-=====
+#bongo
+Bongo is a file server which we at [Steinwurf](http://steinwurf.com/) use for serving executables and presenting performance plots.
 
-File Server
+##Installation
+If you haven't already, install the following requisites:
 
+```
+sudo apt-get install python python-pip fabric
+```
 
-Installation
-============
-First off, we need to install pyhton, pip, and fabric on the server which is to host bongo.::
+Depending on whether you are planning to run bongo in a [testing](#testing) or [production](#production) environment you need to take different actions. The following will guide you through either direction.
 
-  $ apt-get install python python-pip fabric
+###Testing
+If you just want to try out bongo, or do some testing you need to do the following.
 
-Now we need a tool called virtualenvwrapper. This allows us to create an isolated python environment so that the requirements of bongo can be contained.::
+Init the submodules to get [Bootstrap](http://getbootstrap.com/).
 
-  $ pip install virtualenvwrapper
+```
+git submodule init
+git submodule update
+```
 
-Note, virtualenvwrapper is, as the name may imply, just a wrapper for virtualenv that makes it easier to work with.
+Setup a virtual environment
 
-Now you need to configure virtualenvwrapper. Add the follwoing to your shell startup file (e.g., ``.bashrc``)::
+```
+sudo pip install virtualenvwrapper
+```
 
-  export WORKON_HOME=$HOME/.virtualenvs
-  source /usr/local/bin/virtualenvwrapper.sh
+Add the virtualenvwrapper functions and variables to your path
 
-You need to reload the startup script (reboot or do a ``source [startup file]``, e.g., ``.bashrc``) before you can continue with this guide.
+```
+printf export WORKON_HOME=$HOME/.virtualenvs\n >> ~/.bashrc
+printf source /usr/local/bin/virtualenvwrapper.sh\n >> ~/.bashrc
+source ~/.bashrc
+```
 
-Now you are ready to utilize the fabric script to easily get bongo up and running. The fabric script can be used in three scenarios,
+Create a virtual env
 
-#. Run bongo locally in a debug environment (fab localhost debug [command]).
-#. Run bongo locally in a environment (fab localhost [command]).
-#. Run bongo remotely in a environment (fab remote [command]).
+```
+mkvirtualenv bongo
+```
 
-Now use fabric to create the bongo environment and install the requirements::
+mkvirtualenv will automatically activate the virtualenv. If you need to activate it at a later point you can use the following command:
 
-  fab localhost install_requirements
+```
+workon bongo
+```
 
+*For a full list of virtualenvwrappers function, click [here](http://virtualenvwrapper.readthedocs.org/en/latest/).*
+
+To install the bongo requirements, run the following command (while having the virtualenv activated):
+
+```
+pip install -Ur requirements.txt
+```
+
+###Production
+
+To use bongo in production, simply use the included fabric script like so:
+
+```
+fab setup
+```
+
+This will trigger the following fabric tasks. Note that fabric will ask you for the host, username and password, alternatively, you can specify these using ````:
+
+0. **create_user**: Create a new user called bongo
+* **clone**: Clone the bongo repository  on the specified production server to the folder ``/home/bongo/webapps/bongo``
+* **init**: Init the newly cloned repository
+* **install_requirements**: Create an virtual environment and install the requirements
+* **setup_apache**: Setup an Apache server to serve the application and associated static files
+* **deploy_static_files**: Deploy the static files
+
+Furthermore the fabric script can be used for managing a few operations on the server. These include:
+
+* **update**: pulls any new changes to the remote repository
+* **start**: starts the apache service
+* **stop**: stops the apache service
+* **restart**: restarts the apache service
+* **error_log**: cats the error log located at `` /var/log/apache2/error.log`` on the remote server.
+
+##Adding files
+When debugging, put the files in ``bongo/files/files``.
+
+In production, you can either put the files in ``/home/bongo/webapps/bongo/files/files``, and subsequently run:
+```
+fab deploy_static_files
+```
+Alternatively, you can put the files directly in ``/var/www/bongo/static/files``.
+
+##Todo
+
+0. Enable password protection of certain files.
+*. Use special bongo file templates the ``files`` directory to allow custom templates for files in certain locations.

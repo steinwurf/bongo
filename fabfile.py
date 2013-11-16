@@ -1,197 +1,144 @@
 from fabric.api import task
-from fabric.api import run as rrun
-from fabric.api import cd as rcd
-from fabric.api import sudo as rsudo
+from fabric.api import run
+from fabric.api import cd
+from fabric.api import sudo
 from fabric.colors import red
 from fabric.context_managers import lcd, prefix
 from fabric.contrib.console import confirm, prompt
-from fabric.contrib.files import exists as rexists
-from fabric.operations import local as lrun
+from fabric.contrib.files import exists
 from fabric.operations import require
 from fabric.state import env
-from os.path import exists as lexists
-from distutils.util import strtobool
 import os
 
-env.hosts = ["192.168.6.82"]
-env.user = "bongo"
-
-def setup_installer():
-    if 'installer' not in env:
-        env.installer = prompt('What is the remote package handling utility',
-                               default = 'aptitude')
+GIT_TOP_LEVEL = '/home/bongo/webapps/bongo'
 
 def install(package):
-    setup_installer()
-    env.sudo('{0} install {1}'.format(env.installer, package))
-
-@task
-def remote(git_top_level):
-    env.local         = False
-    env.debug         = False
-    env.git_top_level = git_top_level
-
-    env.run           = rrun
-    env.cd            = rcd
-    env.exists        = rexists
-    env.sudo          = rsudo
-
-@task
-def local(debug = 'True', git_top_level = None):
-    env.debug = bool(strtobool(debug))
-    env.local = True
-    if env.debug:
-        env.git_top_level = os.path.dirname(os.path.realpath(__file__))
-    elif git_top_level:
-        env.git_top_level = git_top_level
-    else:
-        print(red('You must specify a git top level if you are not running in'
-                  'debug mode.', True))
-        exit(1)
-
-    env.run    = lambda cmd : lrun(cmd, shell='/bin/bash', capture=True)
-    env.cd     = lcd
-    env.exists = lexists
-    env.sudo   = lambda cmd : env.run('sudo {}'.format(cmd))
+    if 'installer' not in env:
+        prompt('What is the remote package handling utility', key = 'installer',
+                               default = 'aptitude')
+    sudo('{0} install {1}'.format(env.installer, package))
 
 @task
 def setup():
-    require('local', provided_by=[local, remote])
+    create_user()
     clone()
     init()
-    if confirm('Do you want this script to setup the bongo requirements? '
-               'python, pip, django, and virtualenvwrapper will be '
-               'installed and configured.'):
-        install_requirements()
+    install_requirements()
     setup_apache()
     deploy_static_files()
 
 @task
-def create_bongo_user():
-    require('local', provided_by=[local, remote])
-    output = env.run('ls /home')
-    if 'bongo' in output:
-        print("bongo user already exists, not creating one.")
+def create_user():
+    # Hacky way of seeing whether the bongo user exists
+    if 'bongo' in run('ls /home'):
+        print("bongo user already seem to exist, not creating one.")
     else:
-        env.sudo('adduser bongo')
+        password = prompt('Write the desired password for the bongo user:')
+        sudo('useradd -m -U bongo')
+        sudo("echo -e '{0}\n{0}\n' | sudo passwd bongo".format(password))
 
 @task
 def clone():
-    require('local', provided_by=[local, remote])
-    if env.debug:
-        print "No need to clone, you already have done that."
-        return
-
-    env.run('mkdir -p {}'.format(env.git_top_level))
-    install('git')
-    env.run('git clone https://github.com/steinwurf/bongo.git {0}'.format(
-        env.git_top_level))
+    if not exists(GIT_TOP_LEVEL):
+        sudo('mkdir -p {}'.format(GIT_TOP_LEVEL), 'bongo')
+        install('git')
+        sudo('git clone https://github.com/steinwurf/bongo.git {0}'.format(
+            GIT_TOP_LEVEL), 'bongo')
 
 @task
 def init():
-    require('local', provided_by=[local, remote])
-    with env.cd(env.git_top_level):
-        env.run('git submodule init')
-        env.run('git submodule update')
+    with cd(GIT_TOP_LEVEL):
+        sudo('git submodule init', 'bongo')
+        sudo('git submodule update', 'bongo')
 
 @task
 def install_requirements():
-    require('local', provided_by=[local, remote])
     install('python')
     install('python-pip')
 
-    env.sudo('pip install virtualenvwrapper')
+    sudo('pip install virtualenvwrapper')
 
-    env.run('printf "{}" >> ~/.bashrc'.format(
+    if confirm('Do you wish to add the virtualenvwrapper variables to '
+               '~/.bashrc?', False):
+        sudo('printf "{}" >> /home/bongo/.bashrc'.format(
             'export WORKON_HOME=$HOME/.virtualenvs\n'
-            'source /usr/local/bin/virtualenvwrapper.sh\n'))
+            'source /usr/local/bin/virtualenvwrapper.sh\n'), 'bongo')
 
-    with env.cd(env.git_top_level):
-        with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
-            env.run('mkvirtualenv bongo')
-            with prefix('workon bongo'):
-                env.run('pip install -Ur requirements.txt')
+    with cd(GIT_TOP_LEVEL):
+        with prefix('export HOME=/home/bongo'):
+            with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
+                sudo('mkvirtualenv bongo', 'bongo')
+                with prefix('workon bongo'):
+                    sudo('pip install -Ur requirements.txt', 'bongo')
 
 @task
 def setup_apache():
-    require('local', provided_by=[local, remote])
-    if env.debug:
-        print('No need to install apache as this is only for production.')
-        return
     install('apache2')
     install('libapache2-mod-wsgi')
-    env.sudo('a2dissite default')
-    env.sudo('a2enmod wsgi')
+    #Disable the default page
+    sudo('a2dissite default')
+    #Enable wsgi mod
+    sudo('a2enmod wsgi')
 
     apache_file = '/etc/apache2/sites-available/bongo'
-    if env.exists(apache_file):
-        env.sudo('rm {}'.format(apache_file))
+    if exists(apache_file):
+        sudo('rm {}'.format(apache_file))
 
     secret_key = prompt(
-        'Please provide the django secret key', default='testing')
-    with env.cd(os.path.join(env.git_top_level, 'bongo')):
-        env.run('rm -f SECRET')
-        env.run('echo {} >> SECRET'.format(secret_key))
+        'Please provide a secret key for django', default='testing')
+    with cd(os.path.join(GIT_TOP_LEVEL, 'bongo')):
+        sudo('rm -f SECRET', 'bongo')
+        sudo('echo {} >> SECRET'.format(secret_key), 'bongo')
 
-    env.sudo('printf "{0}" >> {1}'.format(
+    sudo('printf "{0}" >> {1}'.format(
        ('<VirtualHost *:80>\n'
         '    ServerName 127.0.1.1\n'
-        '    WSGIDaemonProcess bongo-production user={user} group=bongo '
-                'threads=10 python-path=/home/{user}/.virtualenvs/bongo'
+        '    WSGIDaemonProcess bongo-production user=bongo group=bongo '
+                'threads=10 python-path=/home/bongo/.virtualenvs/bongo'
                 '/lib/python2.7/site-packages\n'
         '    WSGIProcessGroup bongo-production\n'
-        '    WSGIScriptAlias / {git_top_level}/bongo/wsgi.py\n'
+        '    WSGIScriptAlias / {0}/bongo/wsgi.py\n'
         '    Alias /static/ /var/www/bongo/static/\n'
-        '    <Directory {git_top_level}/bongo>\n'
+        '    <Directory {0}/bongo>\n'
         '        Order deny,allow\n'
         '        Allow from all\n'
         '    </Directory>\n'
         '    ErrorLog /var/log/apache2/error.log\n'
         '    LogLevel warn\n'
         '    CustomLog /var/log/apache2/access.log combined\n'
-        '</VirtualHost>\n').format(**env), apache_file))
-    with env.cd('/etc/apache2/sites-enabled'):
-        if env.exists('bongo'):
-            env.sudo('rm bongo')
-        env.sudo('ln -s ../sites-available/bongo')
+        '</VirtualHost>\n').format(GIT_TOP_LEVEL), apache_file))
+    with cd('/etc/apache2/sites-enabled'):
+        sudo('rm -f bongo')
+        sudo('ln -s ../sites-available/bongo')
 
     restart()
 
 @task
 def deploy_static_files():
-    require('local', provided_by=[local, remote])
-    if env.debug:
-        print('No need to deploy static files as this is only for production.')
-        return
-    env.sudo('mkdir -p /var/www/bongo/static/')
-    with env.cd(env.git_top_level):
-        with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
-            with prefix('workon bongo'):
-                env.sudo('./manage.py collectstatic -v0 --noinput')
+    sudo('mkdir -p /var/www/bongo/static/')
+    with cd(GIT_TOP_LEVEL):
+        with prefix('export HOME=/home/bongo'):
+            with prefix('source /usr/local/bin/virtualenvwrapper.sh'):
+                with prefix('workon bongo'):
+                    sudo('./manage.py collectstatic -v0 --noinput', 'bongo')
 
 @task
 def start():
-    require('local', provided_by=[local, remote])
-    if not env.debug:
-        env.run('/etc/init.d/apache2 start')
-    else:
-        print('Run "./manage runserver 8080" in the console')
+    sudo('/etc/init.d/apache2 start')
+
 @task
 def stop():
-    require('local', provided_by=[local, remote])
-    if not env.debug:
-        env.run('/etc/init.d/apache2 stop')
+    sudo('/etc/init.d/apache2 stop')
 
 @task
 def restart():
-    require('local', provided_by=[local, remote])
-    if not env.debug:
-        env.sudo('/etc/init.d/apache2 restart')
-    else:
-        stop()
-        start()
+    sudo('/etc/init.d/apache2 restart')
+
 @task
-def update(git_top_level = None):
-    require('local', provided_by=[local, remote])
-    with env.cd(env.git_top_level):
-        env.run('git pull')
+def update():
+    with cd(GIT_TOP_LEVEL):
+        sudo('git pull', 'bongo')
+
+@task
+def error_log():
+    run('cat /var/log/apache2/error.log')

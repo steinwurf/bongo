@@ -92,3 +92,4 @@ Alternatively, you can put the files directly in ``/var/www/bongo/static/files``
 
 0. Enable password protection of certain files.
 *. Use special bongo file templates the ``files`` directory to allow custom templates for files in certain locations.
+*. Enable messages.

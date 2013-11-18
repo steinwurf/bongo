@@ -1,9 +1,11 @@
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext, loader
-import os
 from helpers import sort_humanly
+import os
 
 def show(request, current_dir = '/'):
     path = None
@@ -23,8 +25,13 @@ def show(request, current_dir = '/'):
     items = []
     try:
         items = os.listdir(path)
-    except Exception, e:
-        print(e)
+    except OSError, e:
+        if e.errno == 2:
+            raise Http404
+        elif e.errno == 13:
+            raise PermissionDenied
+        else:
+            raise
 
     for item in items:
         # Don't show hidden files

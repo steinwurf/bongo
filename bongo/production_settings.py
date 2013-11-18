@@ -14,7 +14,7 @@ DEBUG = False
 
 TEMPLATE_DEBUG = False
 
-TEMPLATE_DIRS += [os.path.join(STATIC_ROOT, 'files')]
+TEMPLATE_DIRS += [STATIC_ROOT]
 
 # WARNING! FIX THIS!
 ALLOWED_HOSTS = ['*']

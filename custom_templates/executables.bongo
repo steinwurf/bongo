@@ -1,0 +1,28 @@
+{% if files %}
+<div class="panel panel-default">
+<div class="panel-body">
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Filename</th>
+            <th>Size</th>
+            <th>Created</th>
+            <th>Download</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for file in files %}
+        <tr>
+            <td>{{forloop.counter}}</td>
+            <td>{{file.filename}}</td>
+            <td>{{file.size}}</td>
+            <td>{{file.time}}</td>
+            <td><a class="btn btn-xs btn-primary" href="/{{file.path}}">Download &raquo;</a></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+{% endif%}

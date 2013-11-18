@@ -31,20 +31,9 @@
         </div>
     </div>
     {% endif %}
-        {% for file in files %}
-            {% cycle '<div class = row>' '' '' %}
-            <div class="col-sm-4 col-md-4">
-                <div class="thumbnail">
-                    <a href="/static/files/{{ current_dir|join:"/" }}{{file}}" class="thumbnail">
-                        <img src="/static/files/{{ current_dir|join:"/" }}{{file}}" alt="{{file}}" style="max-height:300px">
-                    </a>
-                    <div class="caption">
-                    <p>{{file}}</p>
-                </div>
-                </div>
-            </div>
-            {% cycle '' '' '</div>' %}
-        {% endfor %}
+    {% if file_template %}
+    {% include file_template %}
+    {% endif %}
 </div>
 {% endblock %}
 

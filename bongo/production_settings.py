@@ -8,10 +8,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
 from settings import *
+import os
 
 DEBUG = False
 
 TEMPLATE_DEBUG = False
+
+TEMPLATE_DIRS += [os.path.join(STATIC_ROOT, 'files')]
 
 # WARNING! FIX THIS!
 ALLOWED_HOSTS = ['*']

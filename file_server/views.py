@@ -53,7 +53,7 @@ def show(request, requested_dir = '/'):
             files.append({
                 'filename' : item,
                 'path'     : os.path.join(relative_item_path, item),
-                'size'     : stats.st_size/1024/1024,
+                'size'     : stats.st_size/1024.0/1024.0,
                 'time'     : time.ctime(stats.st_mtime)
             })
 

@@ -1,0 +1,14 @@
+{% for file in files %}
+<div class = row>
+    <div class="col-12">
+        <div class="thumbnail">
+            <a href="/{{file.path}}" class="thumbnail">
+                <img src="/static/{{file.path}}" alt="{{file.filename}}">
+            </a>
+            <div class="caption">
+                <p>{{file.filename}}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}

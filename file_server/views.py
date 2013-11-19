@@ -6,7 +6,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext, loader
 from helpers import sort_humanly, find_file_template, ROOT
 import mimetypes
-import os
+import os, time
 
 def show(request, requested_dir = '/'):
     # Get the requested directory. split the current dir with / and filter out
@@ -53,8 +53,8 @@ def show(request, requested_dir = '/'):
             files.append({
                 'filename' : item,
                 'path'     : os.path.join(relative_item_path, item),
-                'size'     : stats.st_size,
-                'time'     : stats.st_mtime
+                'size'     : "{0:.2f}MB".format(stats.st_size/1024.0/1024.0),
+                'time'     : time.ctime(stats.st_mtime)
             })
 
     # Hack to add trailing slash in template if needed

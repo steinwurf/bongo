@@ -29,8 +29,8 @@ sudo pip install virtualenvwrapper
 Add the virtualenvwrapper functions and variables to your path
 
 ```
-printf export WORKON_HOME=$HOME/.virtualenvs\n >> ~/.bashrc
-printf source /usr/local/bin/virtualenvwrapper.sh\n >> ~/.bashrc
+printf "export WORKON_HOME=$HOME/.virtualenvs\n" >> ~/.bashrc
+printf "source /usr/local/bin/virtualenvwrapper.sh\n" >> ~/.bashrc
 source ~/.bashrc
 ```
 

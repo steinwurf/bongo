@@ -57,9 +57,9 @@ def install_requirements():
 
     if confirm('Do you wish to add the virtualenvwrapper variables to '
                '~/.bashrc?', False):
-        sudo('printf "{}" >> /home/bongo/.bashrc'.format(
+        sudo(command = 'printf "{}" >> /home/bongo/.bashrc'.format(
             'export WORKON_HOME=$HOME/.virtualenvs\n'
-            'source /usr/local/bin/virtualenvwrapper.sh\n'), 'bongo')
+            'source /usr/local/bin/virtualenvwrapper.sh\n'), user = 'bongo')
 
     with cd(GIT_TOP_LEVEL):
         with prefix('export HOME=/home/bongo'):

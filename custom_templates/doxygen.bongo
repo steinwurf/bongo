@@ -1,0 +1,11 @@
+{% if files %}
+<div class="panel panel-default">
+    <div class="panel-body">
+    {% for file in files %}
+        {% if "latex" in files.0.path and file.filename == "refman.pdf" or "html" in files.0.path and file.filename == "index.html" %}
+            <a href="/static/{{file.path}}" type="button" class="btn btn-primary btn-lg btn-block">Get Doxygen Manual</a>
+        {% endif %}
+    {% endfor %}
+    </div>
+</div>
+{% endif%}

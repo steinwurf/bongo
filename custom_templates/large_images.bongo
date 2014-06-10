@@ -1,5 +1,5 @@
 {% for file in files %}
-<div class = row>
+<div class = "row">
     <div class="col-12">
         <div class="thumbnail">
             <a href="/{{file.path}}" class="thumbnail">

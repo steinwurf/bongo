@@ -2,18 +2,17 @@ from fabric.api import task
 from fabric.api import run
 from fabric.api import cd
 from fabric.api import sudo
-from fabric.colors import red
-from fabric.context_managers import lcd, prefix
+from fabric.context_managers import prefix
 from fabric.contrib.console import confirm, prompt
 from fabric.contrib.files import exists
-from fabric.operations import require
-from fabric.state import env
 import os
 
 GIT_TOP_LEVEL = '/home/bongo/webapps/bongo'
 
+
 def install(package):
     sudo('apt-get install {0}'.format(package))
+
 
 @task
 def setup():
@@ -23,6 +22,7 @@ def setup():
     install_requirements()
     setup_apache()
     deploy_static_files()
+
 
 @task
 def create_user():
@@ -34,6 +34,7 @@ def create_user():
         sudo('useradd -m -U bongo')
         sudo("echo -e '{0}\n{0}\n' | sudo passwd bongo".format(password))
 
+
 @task
 def clone():
     if not exists(GIT_TOP_LEVEL):
@@ -42,11 +43,13 @@ def clone():
         sudo('git clone https://github.com/steinwurf/bongo.git {0}'.format(
             GIT_TOP_LEVEL), 'bongo')
 
+
 @task
 def init():
     with cd(GIT_TOP_LEVEL):
         sudo('git submodule init', 'bongo')
         sudo('git submodule update', 'bongo')
+
 
 @task
 def install_requirements():
@@ -57,9 +60,9 @@ def install_requirements():
 
     if confirm('Do you wish to add the virtualenvwrapper variables to '
                '~/.bashrc?', False):
-        sudo(command = 'printf "{}" >> /home/bongo/.bashrc'.format(
+        sudo(command='printf "{}" >> /home/bongo/.bashrc'.format(
             'export WORKON_HOME=$HOME/.virtualenvs\n'
-            'source /usr/local/bin/virtualenvwrapper.sh\n'), user = 'bongo')
+            'source /usr/local/bin/virtualenvwrapper.sh\n'), user='bongo')
 
     with cd(GIT_TOP_LEVEL):
         with prefix('export HOME=/home/bongo'):
@@ -68,11 +71,12 @@ def install_requirements():
                 with prefix('workon bongo'):
                     sudo('pip install -Ur requirements.txt', 'bongo')
 
+
 @task
 def setup_apache():
     install('apache2')
     install('libapache2-mod-wsgi')
-    #Enable wsgi mod
+    # Enable wsgi mod
     sudo('a2enmod wsgi')
 
     apache_file = '/etc/apache2/sites-available/bongo.conf'
@@ -86,43 +90,45 @@ def setup_apache():
         sudo('echo {} >> SECRET'.format(secret_key), 'bongo')
 
     # Depending on the version, you need different
-    authorization = { '2.2' : ('        Order deny,allow\n'
-                               '        Allow from all\n'),
-                      '2.4' : ('        Require all granted\n')}
+    authorization = {'2.2': ('        Order deny,allow\n'
+                             '        Allow from all\n'),
+                     '2.4': ('        Require all granted\n')}
 
     sudo("apache2 -v | grep 'Server version'")
     version = prompt('which version of apache are you using {}?'.format(
         str(authorization.keys()).replace("'", "")))
     if version not in authorization.keys():
-        print('This script does not support apache version {}.'.format(version))
+        print(
+            'This script does not support apache version {}.'.format(version))
         exit(1)
 
     if version in ['2.2']:
-        #Disable the default page
+        # Disable the default page
         sudo('a2dissite default')
 
     sudo('printf "{0}" >> {1}'.format(
-       ('<VirtualHost *:80>\n'
-        '    ServerName 127.0.1.1\n'
-        '    WSGIDaemonProcess bongo-production user=bongo group=bongo '
-                'threads=10 python-path=/home/bongo/.virtualenvs/bongo'
-                '/lib/python2.7/site-packages\n'
-        '    WSGIProcessGroup bongo-production\n'
-        '    WSGIScriptAlias / {0}/bongo/wsgi.py\n'
-        '    Alias /static/ /var/www/bongo/static/\n'
-        '    <Directory {0}/bongo>\n'
-        '{1}'
-        '    </Directory>\n'
-        '    ErrorLog /var/log/apache2/error.log\n'
-        '    LogLevel warn\n'
-        '    CustomLog /var/log/apache2/access.log combined\n'
-        '</VirtualHost>\n').format(GIT_TOP_LEVEL, authorization[version]),
+        ('<VirtualHost *:80>\n'
+         '    ServerName 127.0.1.1\n'
+         '    WSGIDaemonProcess bongo-production user=bongo group=bongo '
+         'threads=10 python-path=/home/bongo/.virtualenvs/bongo'
+         '/lib/python2.7/site-packages\n'
+         '    WSGIProcessGroup bongo-production\n'
+         '    WSGIScriptAlias / {0}/bongo/wsgi.py\n'
+         '    Alias /static/ /var/www/bongo/static/\n'
+         '    <Directory {0}/bongo>\n'
+         '{1}'
+         '    </Directory>\n'
+         '    ErrorLog /var/log/apache2/error.log\n'
+         '    LogLevel warn\n'
+         '    CustomLog /var/log/apache2/access.log combined\n'
+         '</VirtualHost>\n').format(GIT_TOP_LEVEL, authorization[version]),
         apache_file))
     with cd('/etc/apache2/sites-enabled'):
         sudo('rm -f bongo.conf')
         sudo('ln -s ../sites-available/bongo.conf')
 
     restart()
+
 
 @task
 def deploy_static_files():
@@ -133,22 +139,27 @@ def deploy_static_files():
                 with prefix('workon bongo'):
                     sudo('./manage.py collectstatic -v0 --noinput', 'bongo')
 
+
 @task
 def start():
     sudo('/etc/init.d/apache2 start')
+
 
 @task
 def stop():
     sudo('/etc/init.d/apache2 stop')
 
+
 @task
 def restart():
     sudo('/etc/init.d/apache2 restart')
+
 
 @task
 def update():
     with cd(GIT_TOP_LEVEL):
         sudo('git pull', 'bongo')
+
 
 @task
 def error_log():

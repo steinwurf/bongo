@@ -44,7 +44,7 @@ TEMPLATE_CONTEXT_PROCESSORS += (
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
-DATABASES = { }
+DATABASES = {}
 
 # Cache
 # https://docs.djangoproject.com/en/1.3/ref/settings/#std:setting-CACHES

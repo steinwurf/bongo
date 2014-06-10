@@ -1,8 +1,12 @@
-import re, os
+import os
+import re
 from django.conf import settings
 
-ROOT = os.path.join(settings.BASE_DIR, 'files', 'files') \
-       if settings.DEBUG else os.path.join(settings.STATIC_ROOT, 'files')
+if settings.DEBUG:
+    ROOT = os.path.join(settings.BASE_DIR, 'files', 'files')
+else:
+    ROOT = os.path.join(settings.STATIC_ROOT, 'files')
+
 
 def tryparse(value):
     try:
@@ -10,12 +14,15 @@ def tryparse(value):
     except:
         return value
 
-def get_human_sortable_key_func(func):
-    return lambda key : \
-        [ tryparse(parts) for parts in re.split('([0-9]+)', func(key)) ]
 
-def sort_humanly(list, func = lambda key : key):
+def get_human_sortable_key_func(func):
+    return lambda key: \
+        [tryparse(parts) for parts in re.split('([0-9]+)', func(key))]
+
+
+def sort_humanly(list, func=lambda key: key):
     list.sort(key=get_human_sortable_key_func(func))
+
 
 def find_file_template(requested_dir):
     current_dir = filter(None, requested_dir.split('/'))
@@ -34,7 +41,9 @@ def find_file_template(requested_dir):
             print(e)
             continue
         current_dir.remove(current_dir[-1])
-    if os.path.exists(os.path.join(settings.TEMPLATE_DIRS[-1],'default.bongo')):
+    default_bongo_file = os.path.join(
+        settings.TEMPLATE_DIRS[-1], 'default.bongo')
+    if os.path.exists(default_bongo_file):
         return 'default.bongo'
     else:
         return None

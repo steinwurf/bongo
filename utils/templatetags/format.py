@@ -2,6 +2,7 @@ from django import template
 
 register = template.Library()
 
+
 def format(value, arg):
     """
     Alters default filter "stringformat" to not add the % at the front,
@@ -14,4 +15,5 @@ def format(value, arg):
             return u''
     except (ValueError, TypeError):
         return u''
+
 register.filter('format', format)

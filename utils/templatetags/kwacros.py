@@ -96,10 +96,10 @@ class DefineMacroNode(template.Node):
 def do_macro(parser, token):
     try:
         args = token.split_contents()
-        tag_name, macro_name, args = args[0], args[1], args[2:]
+        macro_name, args = args[1], args[2:]
     except IndexError:
-        m = ("'%s' tag requires at least one argument (macro name)"
-            % token.contents.split()[0])
+        m = "'{}' tag requires at least one argument (macro name)".format(
+            token.contents.split()[0])
         raise template.TemplateSyntaxError, m
     # TODO: could do some validations here,
     # for now, "blow your head clean off"
@@ -125,8 +125,8 @@ def do_loadmacros(parser, token):
     try:
         tag_name, filename = token.split_contents()
     except IndexError:
-        m = ("'%s' tag requires at least one argument (macro name)"
-            % token.contents.split()[0])
+        m = "'{}' tag requires at least one argument (macro name)".format(
+            token.contents.split()[0])
         raise template.TemplateSyntaxError, m
     if filename[0] in ('"', "'") and filename[-1] == filename[0]:
         filename = filename[1:-1]
@@ -161,9 +161,9 @@ class UseMacroNode(template.Node):
             if name in self.fe_kwargs:
                 context[name] = self.fe_kwargs[name].resolve(context)
             else:
-                context[name] = FilterExpression(default,
-                                                 self.macro.parser
-                ).resolve(context)
+                context[name] = FilterExpression(
+                    default,
+                    self.macro.parser).resolve(context)
 
         return self.macro.nodelist.render(context)
 
@@ -172,7 +172,7 @@ class UseMacroNode(template.Node):
 def do_usemacro(parser, token):
     try:
         args = token.split_contents()
-        tag_name, macro_name, values = args[0], args[1], args[2:]
+        macro_name, values = args[1], args[2:]
     except IndexError:
         m = ("'%s' tag requires at least one argument (macro name)"
              % token.contents.split()[0])

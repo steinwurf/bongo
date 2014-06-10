@@ -8,7 +8,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
 from settings import *
-import os
 
 DEBUG = False
 
@@ -21,8 +20,8 @@ ALLOWED_HOSTS = ['*']
 
 SECRET_KEY = None
 try:
-   with open('SECRET', 'r') as secret_key_file:
-    SECRET_KEY = secret_key_file.read()
+    with open('SECRET', 'r') as secret_key_file:
+        SECRET_KEY = secret_key_file.read()
 except IOError:
     SECRET_KEY = 'testing'
 

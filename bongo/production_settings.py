@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+# encoding: utf-8
 """
 Django production settings for bongo project.
 

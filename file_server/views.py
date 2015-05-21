@@ -8,12 +8,15 @@ from django.http import Http404
 from django.http import StreamingHttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from helpers import sort_humanly, find_file_template, ROOT
+from helpers import human_sortable_key, find_file_template, ROOT
 
 
 def show(request, requested_dir='/'):
-    # Get the requested directory. split the current dir with / and filter out
-    # any None values.
+    """
+    Get the requested directory.
+
+    split the current dir with / and filter out any None values.
+    """
     current_dir = filter(None, requested_dir.split('/'))
     if current_dir:
         path = os.path.join(ROOT, *current_dir)
@@ -66,8 +69,8 @@ def show(request, requested_dir='/'):
     if current_dir:
         current_dir.append('')
 
-    sort_humanly(dirs)
-    sort_humanly(files, lambda item: item['filename'])
+    dirs.sort(key=lambda item: human_sortable_key(item))
+    files.sort(key=lambda item: human_sortable_key(item['filename']))
 
     return render_to_response(
         'file_server/show.html',

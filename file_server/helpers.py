@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
 import os
 import re
 from django.conf import settings
@@ -8,26 +11,24 @@ else:
     ROOT = os.path.join(settings.STATIC_ROOT, 'files')
 
 
-def tryparse(value):
-    try:
-        return int(value)
-    except:
-        return value
-
-
-def get_human_sortable_key_func(func):
-    return lambda key: \
-        [tryparse(parts) for parts in re.split('([0-9]+)', func(key))]
-
-
-def sort_humanly(list, func=lambda key: key):
-    list.sort(key=get_human_sortable_key_func(func))
+def human_sortable_key(old_key):
+    """Create key for sorting like a human."""
+    new_key = []
+    for part in re.split('([0-9]+)', old_key):
+        try:
+            new_key.append(int(part))
+        except:
+            new_key.append(part)
+    return new_key
 
 
 def find_file_template(requested_dir):
+    """Locate template for file presentation based on a given path."""
     current_dir = filter(None, requested_dir.split('/'))
-    depth = len(current_dir)
-    for i in range(depth):
+    if not current_dir:
+        current_dir = ['.']
+
+    for i in range(len(current_dir)):
         path = os.path.join(ROOT, *current_dir)
         try:
             for item in os.listdir(path):
@@ -41,9 +42,5 @@ def find_file_template(requested_dir):
             print(e)
             continue
         current_dir.remove(current_dir[-1])
-    default_bongo_file = os.path.join(
-        settings.TEMPLATE_DIRS[-1], 'default.bongo')
-    if os.path.exists(default_bongo_file):
-        return 'default.bongo'
-    else:
-        return None
+
+    return None

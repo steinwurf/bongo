@@ -1,3 +1,7 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+"""Handle requests."""
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 

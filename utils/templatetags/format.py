@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
 from django import template
 
 register = template.Library()
@@ -5,8 +8,9 @@ register = template.Library()
 
 def format(value, arg):
     """
-    Alters default filter "stringformat" to not add the % at the front,
-    so the variable can be placed anywhere in the string.
+    Alter default filter "stringformat" to not add the % at the front.
+
+    This way the variable can be placed anywhere in the string.
     """
     try:
         if value:

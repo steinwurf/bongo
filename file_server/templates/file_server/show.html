@@ -1,39 +1,46 @@
 {% extends "base.html" %}
-{% load format %}
 {% block content %}
+{% with file_server_show=request.resolver_match.namespace|add:':show' %}
 <div class="container">
-    <ol class="breadcrumb small">
-    {% if current_dir %}
-        <li><a href="/files">files</a></li>
-    {% else %}
-        <!-- We are in the root directory. -->
-        <li class="active">files</li>
-    {% endif %}
-    {% for sub_dir in current_dir|slice:":-1" %}
+  <ol class="breadcrumb small">
+  {% if current_dir %}
+    <li><a href="{% url file_server_show %}">files</a></li>
+  {% else %}
+    <!-- We are in the root directory. -->
+    <li class="active">files</li>
+  {% endif %}
+  {% for sub_dir in current_dir %}
     {% if not forloop.last %}
-        {% with slicer=forloop.counter|format:"0:%s" %}
-        <li><a href="/files/{{ current_dir|slice:slicer|join:"/" }}">{{sub_dir}}</a></li>
-        {% endwith %}
+      {% with slicer=forloop.counter|slugify %}
+        <li><a href=
+          "{% url file_server_show %}/{{current_dir|slice:slicer|join:"/" }}">
+          {{sub_dir}}
+        </a></li>
+      {% endwith %}
     {% else %}
-        <li class="active">{{sub_dir}}</li>
+      <li class="active">{{sub_dir}}</li>
     {% endif %}
-    {% endfor %}
-    </ol>
-    {% if dirs %}
+  {% endfor %}
+  </ol>
+  {% if directories %}
     <div class="panel panel-primary">
-        <div class="panel-heading">
-            <h3 class="panel-title">Directories</h3>
-        </div>
-        <div class="panel-body">
-            {% for dir in dirs %}
-                <a type="button" class="col-md-3 btn btn-default" href="/files/{{ current_dir|join:"/" }}{{dir}}">{{dir}}</a>
-            {% endfor %}
-        </div>
+      <div class="panel-heading">
+        <h3 class="panel-title">Directories</h3>
+      </div>
+      <div class="panel-body">
+        {% for directory in directories %}
+          <a type="button" class="col-md-3 btn btn-default"
+             href="{% url file_server_show %}/{{ directory.path }}">
+            {{ directory.name }}
+          </a>
+        {% endfor %}
+      </div>
     </div>
-    {% endif %}
-    {% if file_template %}
+  {% endif %}
+  {% if file_template %}
     {% include file_template %}
-    {% endif %}
+  {% endif %}
 </div>
+{% endwith %}
 {% endblock %}
 

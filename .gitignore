@@ -35,6 +35,10 @@ nosetests.xml
 .project
 .pydevproject
 
+# SQLite
+db.sqlite3
+
 # Bongo
 files/files/*
 bongo/SECRET
+bongo/config.py

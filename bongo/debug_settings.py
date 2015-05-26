@@ -15,6 +15,4 @@ DEBUG = True
 
 TEMPLATE_DEBUG = True
 
-TEMPLATES[0]["DIRS"] += [os.path.join(BASE_DIR, 'files')]
-
 SECRET_KEY = 'SSSHVERYSECRET!'

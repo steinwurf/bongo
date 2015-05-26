@@ -2,11 +2,11 @@
 <div class = "row">
     <div class="col-12">
         <div class="thumbnail">
-            <a href="/{{file.path}}" class="thumbnail">
-                <img src="/static/{{file.path}}" alt="{{file.filename}}">
+            <a href="{% url file_server_show %}/{{file.path}}" class="thumbnail">
+                <img src="{% url file_server_show %}/{{file.path}}" alt="{{file.name}}">
             </a>
             <div class="caption">
-                <p>{{file.filename}}</p>
+                <p>{{file.name}}</p>
             </div>
         </div>
     </div>

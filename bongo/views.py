@@ -17,10 +17,6 @@ def about(request):
         'about.html', {}, context_instance=RequestContext(request))
 
 
-def login(request):
-    return render(request, 'login.html')
-
-
 def logout(request):
     auth_logout(request)
     return redirect('/')

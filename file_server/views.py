@@ -8,7 +8,7 @@ from django.http import Http404
 from django.http import StreamingHttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from helpers import human_sortable_key
+from helpers import human_sortable_key, find_file_template
 
 
 def show(request, root, requested_dir='/'):
@@ -75,14 +75,3 @@ def download_file(path):
     response['Content-Disposition'] =\
         "attachment; filename={}".format(os.path.basename(path))
     return response
-
-
-def find_file_template(current_dir, path):
-    """Locate template for file presentation based on a given path."""
-    for sub_dir in reversed(['.'] + current_dir):
-        for item in os.listdir(path):
-            item_path = os.path.join(path, item)
-            if not os.path.isdir(item_path) and item.endswith('.bongo'):
-                return item_path
-        path = os.path.join(path, '..')
-    return None

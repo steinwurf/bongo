@@ -3,10 +3,10 @@
 """Web Server Gateway Interface."""
 import os
 import sys
-from django.core.handlers.wsgi import WSGIHandler
+from django.core.wsgi import get_wsgi_application
 
 # put the Django project on sys.path
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 os.environ["DJANGO_SETTINGS_MODULE"] = "bongo.production_settings"
-application = WSGIHandler()
+application = get_wsgi_application()

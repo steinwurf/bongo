@@ -26,4 +26,3 @@ except IOError:
     SECRET_KEY = 'testing'
 
 CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True

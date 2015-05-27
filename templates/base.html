@@ -42,10 +42,26 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li class="{% active request "^/$" %}"><a href="/">Home</a></li>
-            <li class="{% active request "^/files" %}"><a href="/files">Files</a></li>
+            <li class="{% active request "^/files/public" %}"><a href="/files/public">Public Files</a></li>
+            {% if user and not user.is_anonymous %}
+            <li class="{% active request "^/files/private" %}">
+              <a href="/files/private">Private Files</a>
+            </li>
+            {% endif %}
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li class="{% active request "^/about$" %}"><a href="/about">About</a></li>
+            {% if user and not user.is_anonymous %}
+            <li><a href="/logout">Logout</a></li>
+            {% else %}
+            <li>
+              <a href="{% url 'social:begin' 'github-team' %}?next={{ request.path }}">
+              Login
+              </a>
+            </li>
+            {% endif %}
+
+
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -54,7 +70,7 @@
     <br>
     <div id="footer">
       <div class="container">
-        <p class="text-muted credit">Copyright &copy; 2013, <a href="http://www.steinwurf.com">Steinwurf ApS</a> All rights reserved.</p>
+        <p class="text-muted credit">Copyright &copy; 2015, <a href="http://www.steinwurf.com">Steinwurf ApS</a> All rights reserved.</p>
       </div>
     </div>
     <!-- Bootstrap core JavaScript

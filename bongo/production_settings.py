@@ -15,8 +15,6 @@ DEBUG = False
 
 TEMPLATE_DEBUG = False
 
-TEMPLATE_DIRS += [STATIC_ROOT]
-
 # WARNING! FIX THIS!
 ALLOWED_HOSTS = ['*']
 
@@ -28,4 +26,3 @@ except IOError:
     SECRET_KEY = 'testing'
 
 CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True

@@ -15,10 +15,15 @@
     {% for file in files %}
         <tr>
             <td>{{forloop.counter}}</td>
-            <td>{{file.filename}}</td>
+            <td>{{file.name}}</td>
             <td>{{file.size}}</td>
             <td>{{file.time}}</td>
-            <td><a class="btn btn-xs btn-primary" href="/{{file.path}}">Download &raquo;</a></td>
+            <td>
+                <a class="btn btn-xs btn-primary"
+                   href="{% url file_server_show %}/{{file.path}}">
+                        Download &raquo;
+                </a>
+            </td>
         </tr>
     {% endfor %}
     </tbody>

@@ -3,12 +3,6 @@
 
 import os
 import re
-from django.conf import settings
-
-if settings.DEBUG:
-    ROOT = os.path.join(settings.BASE_DIR, 'files', 'files')
-else:
-    ROOT = os.path.join(settings.STATIC_ROOT, 'files')
 
 
 def human_sortable_key(old_key):
@@ -22,25 +16,12 @@ def human_sortable_key(old_key):
     return new_key
 
 
-def find_file_template(requested_dir):
+def find_file_template(current_dir, path):
     """Locate template for file presentation based on a given path."""
-    current_dir = filter(None, requested_dir.split('/'))
-    if not current_dir:
-        current_dir = ['.']
-
-    for i in range(len(current_dir)):
-        path = os.path.join(ROOT, *current_dir)
-        try:
-            for item in os.listdir(path):
-                if os.path.isdir(os.path.join(path, item)) \
-                   or not item.endswith('.bongo'):
-                    continue
-                else:
-                    current_dir.append(item)
-                    return os.path.join('files', *current_dir)
-        except Exception, e:
-            print(e)
-            continue
-        current_dir.remove(current_dir[-1])
-
+    for sub_dir in reversed(['.'] + current_dir):
+        for item in os.listdir(path):
+            item_path = os.path.join(path, item)
+            if not os.path.isdir(item_path) and item.endswith('.bongo'):
+                return item_path
+        path = os.path.join(path, '..')
     return None

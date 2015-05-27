@@ -10,43 +10,71 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
 import os
-from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
+from config import *
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
-
 # Application definition
 
 INSTALLED_APPS = (
-    'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
     'django.contrib.staticfiles',
+    'social.apps.django_app.default',
     'file_server',
     'utils',
 )
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
 )
 
 ROOT_URLCONF = 'bongo.urls'
 
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.core.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.contrib.messages.context_processors.messages',
+                'social.apps.django_app.context_processors.backends',
+                'social.apps.django_app.context_processors.login_redirect',
+            ],
+        },
+    },
+]
+
 WSGI_APPLICATION = 'bongo.wsgi.application'
 
-
-TEMPLATE_CONTEXT_PROCESSORS += (
-    'django.core.context_processors.request',)
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
-DATABASES = {}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
 
 # Cache
 # https://docs.djangoproject.com/en/1.3/ref/settings/#std:setting-CACHES
@@ -81,9 +109,18 @@ STATIC_ROOT = '/var/www/bongo/static/'
 
 STATIC_URL = '/static/'
 
+
+AUTHENTICATION_BACKENDS = (
+    'social.backends.github.GithubTeamOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 STATICFILES_DIRS = (
     # Twitter Bootstrap stuff
     os.path.join(BASE_DIR, "bootstrap/dist"),
-    os.path.join(BASE_DIR, "bootstrap/assets"),
-    os.path.join(BASE_DIR, "files"),
+    os.path.join(BASE_DIR, "bootstrap/assets")
 )
+
+SOCIAL_AUTH_GITHUB_TEAM_SCOPE = ['read:org']
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
+SOCIAL_AUTH_LOGIN_URL = '/'

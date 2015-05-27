@@ -118,8 +118,7 @@ AUTHENTICATION_BACKENDS = (
 STATICFILES_DIRS = (
     # Twitter Bootstrap stuff
     os.path.join(BASE_DIR, "bootstrap/dist"),
-    os.path.join(BASE_DIR, "bootstrap/assets"),
-    os.path.join(BASE_DIR, "files"),
+    os.path.join(BASE_DIR, "bootstrap/assets")
 )
 
 SOCIAL_AUTH_GITHUB_TEAM_SCOPE = ['read:org']

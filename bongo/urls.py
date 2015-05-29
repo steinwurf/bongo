@@ -8,14 +8,8 @@ from django.conf import settings
 import file_server.urls
 import os
 
-
-if settings.DEBUG:
-    root = settings.BASE_DIR
-else:
-    root = settings.STATIC_ROOT
-
-public_root = os.path.join(root, 'public')
-private_root = os.path.join(root, 'private')
+public_root = os.path.join(settings.FILES_LOCATION, 'public')
+private_root = os.path.join(settings.FILES_LOCATION, 'private')
 
 urlpatterns = patterns(
     '',

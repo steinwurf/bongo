@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 """Handle requests."""
-from django.shortcuts import render_to_response, render, redirect
+from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import logout as auth_logout
 from django.template import RequestContext
 

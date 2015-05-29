@@ -2,8 +2,7 @@
 <div class="panel panel-default">
   <div class="panel-body">
   {% for file in files %}
-    {% if "latex" in files.0.path and file.name == "refman.pdf" or
-          "html" in files.0.path and file.name == "index.html" %}
+    {% if "latex" in files.0.path and file.name == "refman.pdf" or "html" in files.0.path and file.name == "index.html" %}
       <a href="{% url file_server_show %}/{{file.path}}"
          type="button"
          class="btn btn-primary btn-lg btn-block">

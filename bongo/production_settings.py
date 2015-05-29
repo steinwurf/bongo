@@ -26,3 +26,5 @@ except IOError:
     SECRET_KEY = 'testing'
 
 CSRF_COOKIE_SECURE = True
+
+FILES_LOCATION = '/var/www/bongo/'

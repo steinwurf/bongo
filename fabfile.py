@@ -89,7 +89,7 @@ def setup_apache():
         sudo('rm -f SECRET', 'bongo')
         sudo('echo {} >> SECRET'.format(secret_key), 'bongo')
 
-    # Depending on the version, you need different
+    # Depending on the version, you need different authorization
     authorization = {'2.2': ('        Order deny,allow\n'
                              '        Allow from all\n'),
                      '2.4': ('        Require all granted\n')}
@@ -106,23 +106,24 @@ def setup_apache():
         # Disable the default page
         sudo('a2dissite default')
 
-    sudo('printf "{0}" >> {1}'.format(
-        ('<VirtualHost *:80>\n'
-         '    ServerName 127.0.1.1\n'
-         '    WSGIDaemonProcess bongo-production user=bongo group=bongo '
-         'threads=10 python-path=/home/bongo/.virtualenvs/bongo'
-         '/lib/python2.7/site-packages\n'
-         '    WSGIProcessGroup bongo-production\n'
-         '    WSGIScriptAlias / {0}/bongo/wsgi.py\n'
-         '    Alias /static/ /var/www/bongo/static/\n'
-         '    <Directory {0}/bongo>\n'
-         '{1}'
-         '    </Directory>\n'
-         '    ErrorLog /var/log/apache2/error.log\n'
-         '    LogLevel warn\n'
-         '    CustomLog /var/log/apache2/access.log combined\n'
-         '</VirtualHost>\n').format(GIT_TOP_LEVEL, authorization[version]),
-        apache_file))
+    apache_configuration = (
+        '<VirtualHost *:80>\n'
+        '    ServerName 127.0.1.1\n'
+        '    WSGIDaemonProcess bongo-production user=bongo group=bongo '
+        'threads=10 python-path=/home/bongo/.virtualenvs/bongo'
+        '/lib/python2.7/site-packages\n'
+        '    WSGIProcessGroup bongo-production\n'
+        '    WSGIScriptAlias / {0}/bongo/wsgi.py\n'
+        '    Alias /static/ /var/www/bongo/static/\n'
+        '    <Directory {0}/bongo>\n'
+        '{1}'
+        '    </Directory>\n'
+        '    ErrorLog /var/log/apache2/error.log\n'
+        '    LogLevel warn\n'
+        '    CustomLog /var/log/apache2/access.log combined\n'
+        '</VirtualHost>\n').format(GIT_TOP_LEVEL, authorization[version])
+
+    sudo('printf "{0}" >> {1}'.format(apache_configuration, apache_file))
     with cd('/etc/apache2/sites-enabled'):
         sudo('rm -f bongo.conf')
         sudo('ln -s ../sites-available/bongo.conf')

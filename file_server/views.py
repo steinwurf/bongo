@@ -72,6 +72,4 @@ def download_file(path):
     response = StreamingHttpResponse(wrapper,
                                      content_type=content_type)
     response['Content-Length'] = os.path.getsize(path)
-    response['Content-Disposition'] =\
-        "attachment; filename={}".format(os.path.basename(path))
     return response

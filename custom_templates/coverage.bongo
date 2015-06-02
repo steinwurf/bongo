@@ -1,0 +1,16 @@
+{% if files %}
+<div class="panel panel-default">
+  <div class="panel-body">
+  {% for file in files %}
+    {% if file.name == "index.html" %}
+      <a href="{% url file_server_show %}/{{file.path}}"
+         type="button"
+         class="btn btn-primary btn-lg btn-block">
+          Show Coverage Report
+      </a>
+    {% endif %}
+
+  {% endfor %}
+  </div>
+</div>
+{% endif%}
